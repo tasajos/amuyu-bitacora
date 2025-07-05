@@ -14,12 +14,35 @@ class AmuyuApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Amuyu',
-      debugShowCheckedModeBanner: false, // Opcional: quita la cinta de "Debug"
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.teal,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        // Define una paleta de colores cohesiva
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.teal,
+          primary: Colors.teal.shade700,
+          secondary: Colors.amber.shade600,
+          // Se elimina la propiedad 'background' que estaba obsoleta.
+          surface: Colors.white,
+        ),
+        useMaterial3: true, // Habilita el diseño más moderno de Material 3
+        
+        // Estilo de las tarjetas
+        // CORRECCIÓN: Se usa CardThemeData en lugar de CardTheme
+        cardTheme: CardThemeData(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+
+        // Estilo de los AppBar
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.teal.shade700,
+          foregroundColor: Colors.white,
+          elevation: 4,
+        ),
       ),
-      home: const HomeScreen(), // Nuestra pantalla principal
+      home: const HomeScreen(),
     );
   }
 }
