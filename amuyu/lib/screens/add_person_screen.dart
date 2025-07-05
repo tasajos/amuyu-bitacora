@@ -16,8 +16,11 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _notesController = TextEditingController();
+  final _identityCardController = TextEditingController();
+  final _countryController = TextEditingController();
+  final _cityController = TextEditingController();
+  DateTime? _selectedBirthDate;
 
-  // Estado para gestionar las relaciones que se van añadiendo en el form
   final List<Relationship> _tempRelationships = [];
   String? _selectedPersonId;
   RelationshipType? _selectedRelationshipType;
@@ -29,7 +32,6 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
           personId: _selectedPersonId!,
           type: _selectedRelationshipType!,
         ));
-        // Limpiar para la siguiente relación
         _selectedPersonId = null;
         _selectedRelationshipType = null;
       });
@@ -48,14 +50,13 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
         name: _nameController.text,
         notes: _notesController.text,
         relationships: _tempRelationships,
+        birthDate: _selectedBirthDate,
+        identityCard: _identityCardController.text,
+        country: _countryController.text,
+        city: _cityController.text,
       );
       Navigator.of(context).pop(newPerson);
     }
-  }
-
-  // Helper para convertir el enum a texto legible
-  String relationshipTypeToString(RelationshipType type) {
-    return type.name[0].toUpperCase() + type.name.substring(1);
   }
 
   @override
@@ -76,13 +77,48 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                 decoration: const InputDecoration(labelText: 'Nombre Completo'),
                 validator: (v) => v == null || v.isEmpty ? 'Introduce un nombre.' : null,
               ),
-              const SizedBox(height: 24),
-              Text(
-                'Añadir Relaciones',
-                style: Theme.of(context).textTheme.titleLarge,
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _identityCardController,
+                decoration: const InputDecoration(labelText: 'Carnet de Identidad'),
               ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _countryController,
+                decoration: const InputDecoration(labelText: 'País'),
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _cityController,
+                decoration: const InputDecoration(labelText: 'Ciudad'),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Fecha de Nacimiento'),
+                subtitle: Text(
+                  _selectedBirthDate == null
+                      ? 'No seleccionada'
+                      : '${_selectedBirthDate!.day}/${_selectedBirthDate!.month}/${_selectedBirthDate!.year}',
+                ),
+                trailing: const Icon(Icons.calendar_today),
+                onTap: () async {
+                  final pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime.now(),
+                  );
+                  if (pickedDate != null) {
+                    setState(() { _selectedBirthDate = pickedDate; });
+                  }
+                },
+              ),
+              const SizedBox(height: 24),
+              
+              // --- SECCIÓN QUE FALTABA ---
+              Text('Añadir Relaciones', style: Theme.of(context).textTheme.titleLarge),
               const Divider(),
-              // Sección para añadir una nueva relación
               if (widget.existingPeople.isNotEmpty) ...[
                 DropdownButtonFormField<String>(
                   value: _selectedPersonId,
@@ -102,24 +138,21 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                   icon: const Icon(Icons.add),
                   label: const Text('Añadir Relación'),
                   onPressed: _addRelationship,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.secondary,
-                    foregroundColor: Colors.black,
-                  ),
                 ),
               ] else ...[
-                const Text('Añade a otra persona primero para poder crear relaciones.')
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text('Añade a otra persona primero para poder crear relaciones.', style: TextStyle(color: Colors.grey)),
+                )
               ],
-              
               const SizedBox(height: 24),
-              Text(
-                'Relaciones Añadidas',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              // Lista de relaciones ya añadidas
+              // --- FIN DE LA SECCIÓN QUE FALTABA ---
+
+              Text('Relaciones a Guardar', style: Theme.of(context).textTheme.titleMedium),
               ..._tempRelationships.map((rel) {
                 final relatedPerson = widget.existingPeople.firstWhere((p) => p.id == rel.personId);
                 return ListTile(
+                  contentPadding: EdgeInsets.zero,
                   title: Text('Es ${relationshipTypeToString(rel.type)} de ${relatedPerson.name}'),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
@@ -127,13 +160,13 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                   ),
                 );
               }).toList(),
-
               const SizedBox(height: 24),
               TextFormField(
                 controller: _notesController,
                 decoration: const InputDecoration(
                   labelText: 'Notas Biográficas',
                   border: OutlineInputBorder(),
+                  alignLabelWithHint: true,
                 ),
                 maxLines: 4,
               ),

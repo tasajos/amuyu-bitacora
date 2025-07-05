@@ -1,44 +1,80 @@
 // lib/models/person_model.dart
 
-// Define los tipos de relación que se pueden tener
 enum RelationshipType {
   padre, madre, hijo, hija, conyuge, tio, tia, sobrino, sobrina, abuelo, abuela
 }
 
+String relationshipTypeToString(RelationshipType type) {
+  String name = type.name.replaceAll('_', ' ');
+  return name[0].toUpperCase() + name.substring(1);
+}
+
 class Relationship {
-  final String personId; // ID de la persona con la que se relaciona
-  final RelationshipType type; // El tipo de relación (ej. es el HIJO de personId)
+  final String personId;
+  final RelationshipType type;
 
   Relationship({required this.personId, required this.type});
+
+  // Constructor para crear desde un mapa (base de datos)
+  factory Relationship.fromMap(Map<String, dynamic> map) {
+    return Relationship(
+      personId: map['relatedToId'],
+      type: RelationshipType.values.byName(map['type']),
+    );
+  }
 }
 
 class Person {
   final String id;
   final String name;
-  final DateTime? birthDate;
-  final DateTime? deathDate;
   final String? notes;
-  
-  // La nueva lista de relaciones
   final List<Relationship> relationships;
+  // --- NUEVOS CAMPOS ---
+  final DateTime? birthDate;
+  final String? identityCard;
+  final String? country;
+  final String? city;
+
 
   Person({
     required this.id,
     required this.name,
-    this.birthDate,
-    this.deathDate,
     this.notes,
-    this.relationships = const [], // Por defecto, una lista vacía
+    this.relationships = const [],
+     // --- NUEVOS CAMPOS ---
+    this.birthDate,
+    this.identityCard,
+    this.country,
+    this.city,
   });
-}
 
-// lib/models/person_model.dart
+  // Nótese que no incluye las relaciones, ya que van en otra tabla.
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'notes': notes,
+      // --- NUEVOS CAMPOS ---
+      'birthDate': birthDate?.toIso8601String(), // Guardamos la fecha como texto
+      'identityCard': identityCard,
+      'country': country,
+      'city': city,
+    };
+  }
 
-// ... (el código de las clases Person y Relationship y el enum) ...
-
-// FUNCIÓN GLOBAL PARA CONVERTIR ENUM A TEXTO
-String relationshipTypeToString(RelationshipType type) {
-  // Reemplaza '_' por ' ' y pone la primera letra en mayúscula
-  String name = type.name.replaceAll('_', ' ');
-  return name[0].toUpperCase() + name.substring(1);
+  // Constructor para crear un objeto Person desde un mapa (BD)
+  // Acepta las relaciones que se leyeron por separado.
+ factory Person.fromMap(Map<String, dynamic> map, List<Relationship> relationships) {
+    return Person(
+      id: map['id'],
+      name: map['name'],
+      notes: map['notes'],
+      relationships: relationships,
+      // --- NUEVOS CAMPOS ---
+      birthDate: map['birthDate'] != null ? DateTime.parse(map['birthDate']) : null,
+      identityCard: map['identityCard'],
+      country: map['country'],
+      city: map['city'],
+    );
+  }
 }

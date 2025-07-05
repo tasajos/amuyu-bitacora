@@ -17,3 +17,8 @@
 - Funcionalidad de añadir personas y relacion
 - Añadir relaciones y detalle
 
+## Init - 3 05/07/2025
+
+- Añadido SQLlite
+- Optimizacion de Relaciones
+- Relacion Bidireccional
