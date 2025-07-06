@@ -9,6 +9,10 @@ import 'package:amuyu/models/historical_event_model.dart';
 class DatabaseHelper {
   static const _databaseName = "Amuyu.db";
   static const _databaseVersion = 4;
+String getDatabaseName() {
+  return _databaseName;
+}
+
 
   // --- Nombres de las Tablas ---
   static const tablePeople = 'people';
@@ -36,6 +40,13 @@ class DatabaseHelper {
         onCreate: _onCreate,
         onUpgrade: _onUpgrade);
   }
+
+// Nueva función para cerrar la conexión de la BD
+Future<void> closeDatabase() async {
+  final db = await instance.database;
+  await db.close();
+  _database = null; // Importante para forzar la reapertura la próxima vez
+}
 
   // --- Creación de Tablas (para una BD nueva) ---
   Future _onCreate(Database db, int version) async {

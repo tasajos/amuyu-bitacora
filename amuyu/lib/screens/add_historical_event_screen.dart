@@ -52,11 +52,10 @@ class _AddHistoricalEventScreenState extends State<AddHistoricalEventScreen> {
     }
   }
 
-  // --- MÉTODO BUILD COMPLETAMENTE REDISEÑADO ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100, // Un fondo sutil
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         title: Text('Registrar: ${widget.eventType}'),
         elevation: 0,
@@ -68,7 +67,6 @@ class _AddHistoricalEventScreenState extends State<AddHistoricalEventScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
-            // --- Tarjeta para la Descripción ---
             Card(
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -93,14 +91,11 @@ class _AddHistoricalEventScreenState extends State<AddHistoricalEventScreen> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // --- Tarjeta para los Detalles ---
             Card(
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Column(
                 children: [
-                  // Selector de Fecha
                   ListTile(
                     leading: Icon(Icons.calendar_month, color: Theme.of(context).primaryColor),
                     title: const Text('Fecha del Evento'),
@@ -118,7 +113,6 @@ class _AddHistoricalEventScreenState extends State<AddHistoricalEventScreen> {
                     },
                   ),
                   const Divider(height: 1, indent: 16, endIndent: 16),
-                  // Selector de Familiar
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: FutureBuilder<List<Person>>(
@@ -133,9 +127,18 @@ class _AddHistoricalEventScreenState extends State<AddHistoricalEventScreen> {
                             prefixIcon: Icon(Icons.family_restroom_outlined, color: Theme.of(context).primaryColor),
                             border: InputBorder.none,
                           ),
+                          // --- CORRECCIÓN AQUÍ ---
+                          // isExpanded le dice al menú que ocupe el espacio disponible sin desbordarse.
+                          isExpanded: true,
                           items: [
                             const DropdownMenuItem(value: null, child: Text('Ninguno')),
-                            ...people.map((p) => DropdownMenuItem(value: p.id, child: Text(p.name))),
+                            ...people.map((p) => DropdownMenuItem(
+                              value: p.id,
+                              // El widget Flexible permite que el texto se ajuste si es muy largo
+                              child: Flexible(
+                                child: Text(p.name, overflow: TextOverflow.ellipsis),
+                              ),
+                            )),
                           ],
                           onChanged: (value) => setState(() => _selectedPersonId = value),
                         );
@@ -146,8 +149,6 @@ class _AddHistoricalEventScreenState extends State<AddHistoricalEventScreen> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // --- Selección de Prioridad ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -176,8 +177,6 @@ class _AddHistoricalEventScreenState extends State<AddHistoricalEventScreen> {
               ),
             ),
             const SizedBox(height: 30),
-
-            // --- Botón de Guardar ---
             ElevatedButton.icon(
               icon: const Icon(Icons.save_alt),
               label: const Text('Guardar Hecho Histórico'),

@@ -36,3 +36,9 @@
 
 - Añadido Documentos Familiares
 - Funcionalidad Hechos Historicos
+
+## Update - 6. -  05/07/2025
+
+- Añadido Funcionalidad Mantenimiento
+- Solucion *Bug* Desbordamiento en el formulario de registros historicos
+

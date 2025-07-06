@@ -6,6 +6,7 @@ import 'package:amuyu/screens/historical_log_screen.dart';
 import 'package:amuyu/widgets/menu_card.dart';
 import 'package:flutter/material.dart';
 import 'package:amuyu/screens/family_documents_screen.dart';
+import 'package:amuyu/screens/maintenance_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -57,6 +58,19 @@ class HomeScreen extends StatelessWidget {
               );
     },
     ),
+
+ MenuCard(
+            title: 'Mantenimiento',
+            icon: Icons.settings_backup_restore,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MaintenanceScreen()),
+              );
+            },
+    ),
+
+
+
         ],
       ),
     );
