@@ -13,7 +13,6 @@ enum RelationshipType {
   sobrina,
   abuelo,
   abuela,
-  // --- NUEVOS TIPOS ---
   nieto,
   nieta,
   bisabuelo,
@@ -27,7 +26,9 @@ enum RelationshipType {
   yerno,
   nuera,
   hermanopolitico,
-  hermanapolitica
+  hermanapolitica,
+  hermano,
+  hermana
 }
 
 String relationshipTypeToString(RelationshipType type) {

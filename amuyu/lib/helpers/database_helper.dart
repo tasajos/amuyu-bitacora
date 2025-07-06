@@ -194,6 +194,8 @@ Future<void> updatePerson(Person person) async {
     RelationshipType.nuera: RelationshipType.suegro,
     RelationshipType.hermanopolitico: RelationshipType.hermanopolitico, // La inversa de cuñado/a es cuñado/a
     RelationshipType.hermanapolitica: RelationshipType.hermanapolitica,
+    RelationshipType.hermano: RelationshipType.hermano,
+    RelationshipType.hermana: RelationshipType.hermana,
   };
   return inverses[type];
   }
