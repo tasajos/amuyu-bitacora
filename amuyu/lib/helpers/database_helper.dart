@@ -6,7 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:amuyu/models/person_model.dart';
 import 'package:amuyu/models/historical_event_model.dart';
 import 'package:amuyu/models/daily_activity_model.dart'; 
-import 'package:flutter/material.dart'; // Necesario para IconData
+// Necesario para IconData
 
 class DatabaseHelper {
   static const _databaseName = "Amuyu.db";

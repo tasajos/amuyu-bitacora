@@ -1,7 +1,7 @@
 // lib/screens/historical_log_screen.dart
 import 'package:flutter/material.dart';
 import 'package:amuyu/widgets/document_category_card.dart'; // Reutilizamos el card elegante
-import 'package:amuyu/screens/add_historical_event_screen.dart'; // Importamos la pantalla del formulario
+// Importamos la pantalla del formulario
 import 'package:amuyu/screens/historical_event_list_screen.dart';
 
 class HistoricalLogScreen extends StatelessWidget {

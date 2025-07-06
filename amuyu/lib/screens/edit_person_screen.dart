@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:amuyu/models/person_model.dart';
-import 'package:amuyu/helpers/database_helper.dart'; // Necesitaremos esto más adelante
+// Necesitaremos esto más adelante
 
 class EditPersonScreen extends StatefulWidget {
   final Person personToEdit;

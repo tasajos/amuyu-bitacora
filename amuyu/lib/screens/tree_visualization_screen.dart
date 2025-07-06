@@ -131,7 +131,7 @@ class _TreeVisualizationScreenState extends State<TreeVisualizationScreen> {
           ),
           if (spouseName != null)
             Text(
-              "(${spouseName})",
+              "($spouseName)",
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey),
             ),

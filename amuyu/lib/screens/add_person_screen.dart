@@ -186,7 +186,7 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                     onPressed: () => setState(() => _tempRelationships.remove(rel)),
                   ),
                 );
-              }).toList(),
+              }),
               const SizedBox(height: 24),
               TextFormField(
                 controller: _notesController,
