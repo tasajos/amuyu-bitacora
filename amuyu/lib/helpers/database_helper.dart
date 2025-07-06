@@ -7,7 +7,7 @@ import 'package:amuyu/models/person_model.dart';
 
 class DatabaseHelper {
   static const _databaseName = "Amuyu.db";
-  static const _databaseVersion = 2;
+  static const _databaseVersion = 3;
 
   static const tablePeople = 'people';
   static const tableRelationships = 'relationships';
@@ -77,7 +77,8 @@ Future<void> updatePerson(Person person) async {
             birthDate TEXT,
             identityCard TEXT,
             country TEXT,
-            city TEXT
+            city TEXT,
+            isAlive INTEGER NOT NULL DEFAULT 1 
           )
           ''');
     
@@ -178,7 +179,22 @@ Future<void> updatePerson(Person person) async {
       RelationshipType.sobrino: RelationshipType.tio,
       RelationshipType.sobrina: RelationshipType.tio,
       RelationshipType.conyuge: RelationshipType.conyuge,
-    };
-    return inverses[type];
+    // --- NUEVAS INVERSAS ---
+    RelationshipType.nieto: RelationshipType.abuelo,
+    RelationshipType.nieta: RelationshipType.abuelo,
+    RelationshipType.bisabuelo: RelationshipType.bisnieto,
+    RelationshipType.bisabuela: RelationshipType.bisnieto,
+    RelationshipType.bisnieto: RelationshipType.bisabuelo,
+    RelationshipType.bisnieta: RelationshipType.bisabuelo,
+    RelationshipType.primo: RelationshipType.primo, // La inversa de primo/a es primo/a
+    RelationshipType.prima: RelationshipType.primo,
+    RelationshipType.suegro: RelationshipType.yerno, // Simplificado, podría ser nuera
+    RelationshipType.suegra: RelationshipType.yerno,
+    RelationshipType.yerno: RelationshipType.suegro,
+    RelationshipType.nuera: RelationshipType.suegro,
+    RelationshipType.hermanopolitico: RelationshipType.hermanopolitico, // La inversa de cuñado/a es cuñado/a
+    RelationshipType.hermanapolitica: RelationshipType.hermanapolitica,
+  };
+  return inverses[type];
   }
 }

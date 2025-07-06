@@ -5,7 +5,6 @@ import 'package:amuyu/models/person_model.dart';
 import 'package:amuyu/helpers/database_helper.dart';
 import 'package:amuyu/screens/edit_person_screen.dart';
 
-// PASO 1: Cambiar StatelessWidget por StatefulWidget
 class PersonDetailScreen extends StatefulWidget {
   final Person person;
   final List<Person> allPeople;
@@ -26,7 +25,6 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // PASO 2: Usar 'widget.person' para acceder a la variable inicial
     _currentPerson = widget.person;
   }
 
@@ -35,7 +33,6 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
       MaterialPageRoute(
         builder: (_) => EditPersonScreen(
           personToEdit: _currentPerson,
-          // PASO 2: Usar 'widget.allPeople'
           allPeople: widget.allPeople,
         ),
       ),
@@ -43,8 +40,6 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
 
     if (updatedPerson != null) {
       await DatabaseHelper.instance.updatePerson(updatedPerson);
-      
-      // Actualizamos el estado para refrescar la UI al instante
       setState(() {
         _currentPerson = updatedPerson;
       });
@@ -56,23 +51,16 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Confirmar Eliminación'),
-        content: const Text('¿Estás seguro de que quieres eliminar esta relación? Esta acción no se puede deshacer.'),
+        content: const Text('¿Estás seguro de que quieres eliminar esta relación?'),
         actions: [
-          TextButton(
-            child: const Text('Cancelar'),
-            onPressed: () => Navigator.of(ctx).pop(false),
-          ),
-          TextButton(
-            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
-            onPressed: () => Navigator.of(ctx).pop(true),
-          ),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Eliminar', style: TextStyle(color: Colors.red))),
         ],
       ),
     );
 
     if (confirm == true) {
       await DatabaseHelper.instance.deleteRelationship(_currentPerson.id, rel);
-      // Para ver el cambio, necesitamos recargar la persona desde la BD
       final peopleList = await DatabaseHelper.instance.getPeople();
       setState(() {
         _currentPerson = peopleList.firstWhere((p) => p.id == _currentPerson.id);
@@ -80,7 +68,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     }
   }
 
-  @override
+
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -103,7 +92,6 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                 children: [
                   Text('Información Básica', style: Theme.of(context).textTheme.titleLarge),
                   const Divider(),
-                  // PASO 2: Usar _currentPerson en lugar de widget.person para que se actualice
                   ListTile(leading: const Icon(Icons.person), title: const Text('Nombre'), subtitle: Text(_currentPerson.name)),
                   if (_currentPerson.notes != null && _currentPerson.notes!.isNotEmpty)
                     ListTile(leading: const Icon(Icons.notes), title: const Text('Notas'), subtitle: Text(_currentPerson.notes!)),
@@ -113,6 +101,17 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                     ListTile(leading: const Icon(Icons.badge), title: const Text('Carnet de Identidad'), subtitle: Text(_currentPerson.identityCard!)),
                   if (_currentPerson.country != null && _currentPerson.country!.isNotEmpty)
                     ListTile(leading: const Icon(Icons.public), title: const Text('País / Ciudad'), subtitle: Text('${_currentPerson.country ?? ''}, ${_currentPerson.city ?? ''}')),
+                  
+                  // --- CORRECCIÓN AQUÍ ---
+                  // Este es el widget correcto para esta pantalla. Muestra el estado, no lo edita.
+                  ListTile(
+                    leading: Icon(
+                      _currentPerson.isAlive ? Icons.favorite : Icons.heart_broken,
+                      color: _currentPerson.isAlive ? Colors.green.shade600 : Colors.grey.shade600,
+                    ),
+                    title: const Text('Estado'),
+                    subtitle: Text(_currentPerson.isAlive ? 'Vivo/a' : 'Fallecido/a'),
+                  ),
                 ],
               ),
             ),
@@ -149,7 +148,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                           }
                         },
                       );
-                    }).toList(),
+                    }),
                 ],
               ),
             ),

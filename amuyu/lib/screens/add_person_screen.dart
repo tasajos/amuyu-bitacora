@@ -20,6 +20,7 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
   final _countryController = TextEditingController();
   final _cityController = TextEditingController();
   DateTime? _selectedBirthDate;
+  bool _isAlive = true; // Por defecto, vivo
 
   final List<Relationship> _tempRelationships = [];
   String? _selectedPersonId;
@@ -53,7 +54,8 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
         birthDate: _selectedBirthDate,
         identityCard: _identityCardController.text,
         country: _countryController.text,
-        city: _cityController.text,
+       city: _cityController.text,
+      isAlive: _isAlive, 
       );
       Navigator.of(context).pop(newPerson);
     }
@@ -114,6 +116,31 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                   }
                 },
               ),
+
+                const SizedBox(height: 10),
+                Text('Estado', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade700)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: RadioListTile<bool>(
+                        title: const Text('Vivo/a'),
+                        value: true,
+                        groupValue: _isAlive,
+                        onChanged: (value) => setState(() => _isAlive = value!),
+                      ),
+                    ),
+                    Expanded(
+                      child: RadioListTile<bool>(
+                        title: const Text('Fallecido/a'),
+                        value: false,
+                        groupValue: _isAlive,
+                        onChanged: (value) => setState(() => _isAlive = value!),
+                      ),
+                    ),
+                  ],
+                ),
+
+
               const SizedBox(height: 24),
               
               // --- SECCIÓN QUE FALTABA ---

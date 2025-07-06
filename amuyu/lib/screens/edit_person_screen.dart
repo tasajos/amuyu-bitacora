@@ -8,6 +8,7 @@ class EditPersonScreen extends StatefulWidget {
   final Person personToEdit;
   final List<Person> allPeople;
 
+  // El constructor ahora es válido porque todos los campos de esta clase son 'final'.
   const EditPersonScreen({
     super.key,
     required this.personToEdit,
@@ -21,7 +22,6 @@ class EditPersonScreen extends StatefulWidget {
 class _EditPersonScreenState extends State<EditPersonScreen> {
   final _formKey = GlobalKey<FormState>();
   
-  // Controladores para los campos del formulario
   late TextEditingController _nameController;
   late TextEditingController _notesController;
   late TextEditingController _identityCardController;
@@ -29,16 +29,18 @@ class _EditPersonScreenState extends State<EditPersonScreen> {
   late TextEditingController _cityController;
   DateTime? _selectedBirthDate;
   
-  // Lista temporal para manejar las relaciones en el formulario
+  // --- CORRECCIÓN AQUÍ ---
+  // La variable de estado '_isAlive' ahora vive en la clase State, que es su lugar correcto.
+  late bool _isAlive; 
+  
   late List<Relationship> _tempRelationships;
   String? _selectedPersonId;
   RelationshipType? _selectedRelationshipType;
 
-  @override
+
+   @override
   void initState() {
     super.initState();
-    // --- AQUÍ ESTÁ LA MAGIA ---
-    // Inicializamos los controladores con los datos de la persona a editar
     _nameController = TextEditingController(text: widget.personToEdit.name);
     _notesController = TextEditingController(text: widget.personToEdit.notes);
     _identityCardController = TextEditingController(text: widget.personToEdit.identityCard);
@@ -46,13 +48,14 @@ class _EditPersonScreenState extends State<EditPersonScreen> {
     _cityController = TextEditingController(text: widget.personToEdit.city);
     _selectedBirthDate = widget.personToEdit.birthDate;
     
-    // Creamos una copia de la lista de relaciones para poder editarla
+    // Ahora podemos inicializar '_isAlive' aquí sin problemas.
+    _isAlive = widget.personToEdit.isAlive;
+    
     _tempRelationships = List.of(widget.personToEdit.relationships);
   }
 
   @override
   void dispose() {
-    // Es buena práctica limpiar los controladores cuando el widget se destruye
     _nameController.dispose();
     _notesController.dispose();
     _identityCardController.dispose();
@@ -62,8 +65,7 @@ class _EditPersonScreenState extends State<EditPersonScreen> {
   }
 
   // Lógica para añadir una nueva relación a la lista temporal
-  void _addRelationship() {
-    // Evitar añadir una relación con uno mismo o una que ya existe
+ void _addRelationship() {
     if (_selectedPersonId != null && _selectedRelationshipType != null) {
       if (_selectedPersonId == widget.personToEdit.id) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No puedes crear una relación contigo mismo.')));
@@ -73,7 +75,6 @@ class _EditPersonScreenState extends State<EditPersonScreen> {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Esta relación ya existe.')));
         return;
       }
-
       setState(() {
         _tempRelationships.add(Relationship(personId: _selectedPersonId!, type: _selectedRelationshipType!));
         _selectedPersonId = null;
@@ -82,12 +83,10 @@ class _EditPersonScreenState extends State<EditPersonScreen> {
     }
   }
 
-  // Lógica para guardar todos los cambios
   void _saveForm() {
     if (_formKey.currentState!.validate()) {
-      // Creamos un nuevo objeto Person con los datos actualizados del formulario
       final updatedPerson = Person(
-        id: widget.personToEdit.id, // Mantenemos el mismo ID
+        id: widget.personToEdit.id,
         name: _nameController.text,
         notes: _notesController.text,
         relationships: _tempRelationships,
@@ -95,16 +94,15 @@ class _EditPersonScreenState extends State<EditPersonScreen> {
         identityCard: _identityCardController.text,
         country: _countryController.text,
         city: _cityController.text,
+        // Ahora se puede acceder a '_isAlive' sin problemas.
+        isAlive: _isAlive,
       );
-      // Devolvemos la persona actualizada a la pantalla anterior
       Navigator.of(context).pop(updatedPerson);
     }
   }
 
-  // La UI es casi idéntica a AddPersonScreen
   @override
   Widget build(BuildContext context) {
-    // Filtramos la lista de personas para no poder seleccionarse a sí mismo
     final availablePeople = widget.allPeople.where((p) => p.id != widget.personToEdit.id).toList();
 
     return Scaffold(
@@ -117,8 +115,6 @@ class _EditPersonScreenState extends State<EditPersonScreen> {
         child: Form(
           key: _formKey,
           child: ListView(
-            // El contenido del ListView es el mismo que el de AddPersonScreen,
-            // usando los controladores que ya hemos inicializado.
             children: [
               TextFormField(controller: _nameController, decoration: const InputDecoration(labelText: 'Nombre Completo'), validator: (v) => v!.isEmpty ? 'Introduce un nombre.' : null),
               const SizedBox(height: 10),
@@ -128,7 +124,7 @@ class _EditPersonScreenState extends State<EditPersonScreen> {
               const SizedBox(height: 10),
               TextFormField(controller: _cityController, decoration: const InputDecoration(labelText: 'Ciudad')),
               const SizedBox(height: 20),
-              ListTile(
+               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Fecha de Nacimiento'),
                 subtitle: Text(_selectedBirthDate == null ? 'No seleccionada' : '${_selectedBirthDate!.day}/${_selectedBirthDate!.month}/${_selectedBirthDate!.year}'),
@@ -138,7 +134,31 @@ class _EditPersonScreenState extends State<EditPersonScreen> {
                   if (pickedDate != null) setState(() { _selectedBirthDate = pickedDate; });
                 },
               ),
+              const SizedBox(height: 10),
+              // El widget de RadioListTile ahora puede acceder a '_isAlive' sin problemas.
+              Text('Estado', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade700)),
+              Row(
+                children: [
+                  Expanded(
+                    child: RadioListTile<bool>(
+                      title: const Text('Vivo/a'),
+                      value: true,
+                      groupValue: _isAlive,
+                      onChanged: (value) => setState(() => _isAlive = value!),
+                    ),
+                  ),
+                  Expanded(
+                    child: RadioListTile<bool>(
+                      title: const Text('Fallecido/a'),
+                      value: false,
+                      groupValue: _isAlive,
+                      onChanged: (value) => setState(() => _isAlive = value!),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
+
               Text('Editar Relaciones', style: Theme.of(context).textTheme.titleLarge),
               const Divider(),
               if (availablePeople.isNotEmpty) ...[
@@ -167,7 +187,7 @@ class _EditPersonScreenState extends State<EditPersonScreen> {
                   title: Text('Es ${relationshipTypeToString(rel.type)} de ${relatedPerson.name}'),
                   trailing: IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => setState(() => _tempRelationships.remove(rel))),
                 );
-              }).toList(),
+              }),
               const SizedBox(height: 24),
               TextFormField(controller: _notesController, decoration: const InputDecoration(labelText: 'Notas Biográficas', border: OutlineInputBorder(), alignLabelWithHint: true), maxLines: 4),
             ],

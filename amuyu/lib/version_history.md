@@ -22,3 +22,8 @@
 - Añadido SQLlite
 - Optimizacion de Relaciones
 - Relacion Bidireccional
+- Añadido Estado de Relaciones y nuevos tipos
+
+## Init - 3.1 -  05/07/2025
+
+- Añadido Estado de Relaciones y nuevos tipos

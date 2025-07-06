@@ -1,7 +1,33 @@
 // lib/models/person_model.dart
 
 enum RelationshipType {
-  padre, madre, hijo, hija, conyuge, tio, tia, sobrino, sobrina, abuelo, abuela
+  // Originales
+  padre,
+  madre,
+  hijo,
+  hija,
+  conyuge,
+  tio,
+  tia,
+  sobrino,
+  sobrina,
+  abuelo,
+  abuela,
+  // --- NUEVOS TIPOS ---
+  nieto,
+  nieta,
+  bisabuelo,
+  bisabuela,
+  bisnieto,
+  bisnieta,
+  primo,
+  prima,
+  suegro,
+  suegra,
+  yerno,
+  nuera,
+  hermanopolitico,
+  hermanapolitica
 }
 
 String relationshipTypeToString(RelationshipType type) {
@@ -34,7 +60,7 @@ class Person {
   final String? identityCard;
   final String? country;
   final String? city;
-
+  final bool isAlive;
 
   Person({
     required this.id,
@@ -46,6 +72,8 @@ class Person {
     this.identityCard,
     this.country,
     this.city,
+    this.isAlive = true, // Por defecto, una persona nueva está viva
+
   });
 
   // Nótese que no incluye las relaciones, ya que van en otra tabla.
@@ -59,6 +87,9 @@ class Person {
       'identityCard': identityCard,
       'country': country,
       'city': city,
+      'isAlive': isAlive ? 1 : 0,
+
+
     };
   }
 
@@ -75,6 +106,8 @@ class Person {
       identityCard: map['identityCard'],
       country: map['country'],
       city: map['city'],
+       // Leemos el entero y lo convertimos de nuevo a booleano
+      isAlive: map['isAlive'] == 1,
     );
   }
 }
