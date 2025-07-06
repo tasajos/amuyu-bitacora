@@ -46,4 +46,8 @@
 
 - Añadido Edicion de Hecho Historico
 
+## Update - 7.1 -  06/07/2025
+
+- Añadido Actividades Diarias
+
 

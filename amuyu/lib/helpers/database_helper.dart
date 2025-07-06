@@ -5,20 +5,21 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:amuyu/models/person_model.dart';
 import 'package:amuyu/models/historical_event_model.dart';
+import 'package:amuyu/models/daily_activity_model.dart'; 
+import 'package:flutter/material.dart'; // Necesario para IconData
 
 class DatabaseHelper {
   static const _databaseName = "Amuyu.db";
-  static const _databaseVersion = 4;
+  static const _databaseVersion = 5;
+  static const tableDailyActivities = 'daily_activities'; // <-- Nuevo nombre de tabla
+ static const tablePeople = 'people';
+  static const tableRelationships = 'relationships';
+  static const tableHistoricalEvents = 'historical_events';
+  
+
 String getDatabaseName() {
   return _databaseName;
 }
-
-
-  // --- Nombres de las Tablas ---
-  static const tablePeople = 'people';
-  static const tableRelationships = 'relationships';
-  static const tableHistoricalEvents = 'historical_events'; // Variable declarada
-
   // --- Singleton ---
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
@@ -87,6 +88,21 @@ Future<void> closeDatabase() async {
         relatedPersonId TEXT
       )
     ''');
+
+ // Añadir la creación de la nueva tabla
+    await db.execute('''
+      CREATE TABLE $tableDailyActivities (
+        id TEXT PRIMARY KEY,
+        activityName TEXT NOT NULL,
+        iconCodePoint INTEGER NOT NULL,
+        notes TEXT,
+        date TEXT NOT NULL
+      )
+    ''');
+
+
+
+
   }
 
   // --- Migración de la BD (para actualizar una BD existente) ---
@@ -103,6 +119,18 @@ Future<void> closeDatabase() async {
           relatedPersonId TEXT
         )
       ''');
+}
+      if (oldVersion < 5) {
+      await db.execute('''
+        CREATE TABLE $tableDailyActivities (
+          id TEXT PRIMARY KEY,
+          activityName TEXT NOT NULL,
+          iconCodePoint INTEGER NOT NULL,
+          notes TEXT,
+          date TEXT NOT NULL
+        )
+      ''');
+
     }
     // En el futuro, si tuvieras una versión 5, añadirías:
     // if (oldVersion < 5) { /* Comandos para la versión 5 */ }
@@ -203,6 +231,37 @@ Future<void> closeDatabase() async {
     
     return people;
   }
+
+
+  // --- Métodos para Actividades Diarias ---
+
+  Future<void> insertDailyActivity(DailyActivity activity) async {
+    final db = await instance.database;
+    await db.insert(tableDailyActivities, activity.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<DailyActivity>> getDailyActivities() async {
+    final db = await instance.database;
+    // Ordenamos por fecha para que las más recientes aparezcan primero
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableDailyActivities,
+      orderBy: 'date DESC',
+    );
+    return List.generate(maps.length, (i) {
+      return DailyActivity.fromMap(maps[i]);
+    });
+  }
+
+  Future<void> deleteDailyActivity(String id) async {
+  final db = await instance.database;
+  await db.delete(
+    tableDailyActivities,
+    where: 'id = ?',
+    whereArgs: [id],
+  );
+}
+
 
   RelationshipType? _getInverseRelationshipType(RelationshipType type) {
     const inverses = {
