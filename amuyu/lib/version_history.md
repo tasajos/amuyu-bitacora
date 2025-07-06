@@ -42,3 +42,8 @@
 - Añadido Funcionalidad Mantenimiento
 - Solucion *Bug* Desbordamiento en el formulario de registros historicos
 
+## Update - 7. -  05/07/2025
+
+- Añadido Edicion de Hecho Historico
+
+

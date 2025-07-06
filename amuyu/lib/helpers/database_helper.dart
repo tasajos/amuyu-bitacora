@@ -242,15 +242,25 @@ Future<void> closeDatabase() async {
 
   Future<void> insertHistoricalEvent(HistoricalEvent event) async {
     final db = await instance.database;
-    await db.insert(tableHistoricalEvents, event.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(tableHistoricalEvents, event.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<HistoricalEvent>> getHistoricalEvents() async {
     final db = await instance.database;
     final List<Map<String, dynamic>> maps = await db.query(tableHistoricalEvents);
-    return List.generate(maps.length, (i) {
-      return HistoricalEvent.fromMap(maps[i]);
-    });
+    return List.generate(maps.length, (i) => HistoricalEvent.fromMap(maps[i]));
   }
+
+  // --- CORRECCIÓN AQUÍ: La función ahora está DENTRO de la clase ---
+  Future<void> updateHistoricalEvent(HistoricalEvent event) async {
+    final db = await instance.database;
+    await db.update(
+      tableHistoricalEvents,
+      event.toMap(),
+      where: 'id = ?',
+      whereArgs: [event.id],
+    );
+  }
+
+  
 }

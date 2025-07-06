@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:amuyu/widgets/document_category_card.dart'; // Reutilizamos el card elegante
 import 'package:amuyu/screens/add_historical_event_screen.dart'; // Importamos la pantalla del formulario
+import 'package:amuyu/screens/historical_event_list_screen.dart';
 
 class HistoricalLogScreen extends StatelessWidget {
   const HistoricalLogScreen({super.key});
@@ -45,9 +46,14 @@ class HistoricalLogScreen extends StatelessWidget {
             startColor: category['startColor'],
             endColor: category['endColor'],
             onTap: () {
+            // --- 2. Cambiar la navegación ---
+              // Ahora navegamos a la pantalla de lista, pasando el tipo y el ícono.
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => AddHistoricalEventScreen(eventType: category['title']),
+                  builder: (_) => HistoricalEventListScreen(
+                    eventType: category['title'],
+                    icon: category['icon'],
+                  ),
                 ),
               );
             },
