@@ -4,17 +4,22 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:amuyu/models/person_model.dart';
+import 'package:amuyu/models/historical_event_model.dart';
 
 class DatabaseHelper {
   static const _databaseName = "Amuyu.db";
-  static const _databaseVersion = 3;
+  static const _databaseVersion = 4;
 
+  // --- Nombres de las Tablas ---
   static const tablePeople = 'people';
   static const tableRelationships = 'relationships';
+  static const tableHistoricalEvents = 'historical_events'; // Variable declarada
 
+  // --- Singleton ---
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
 
+  // --- Referencia a la Base de Datos ---
   static Database? _database;
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -22,6 +27,7 @@ class DatabaseHelper {
     return _database!;
   }
 
+  // --- Inicialización de la BD ---
   _initDatabase() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, _databaseName);
@@ -31,44 +37,9 @@ class DatabaseHelper {
         onUpgrade: _onUpgrade);
   }
 
-
-Future<void> updatePerson(Person person) async {
-  final db = await instance.database;
-  await db.transaction((txn) async {
-    // 1. Actualiza los datos de la persona en la tabla 'people'
-    await txn.update(
-      tablePeople,
-      person.toMap(),
-      where: 'id = ?',
-      whereArgs: [person.id],
-    );
-
-    // 2. Borra TODAS las relaciones antiguas de esta persona (tanto directas como inversas)
-    // Esto simplifica la lógica enormemente.
-    await txn.delete(tableRelationships, where: 'personId = ? OR relatedToId = ?', whereArgs: [person.id, person.id]);
-
-    // 3. Vuelve a insertar todas las relaciones actualizadas y sus inversas
-    for (final rel in person.relationships) {
-      await txn.insert(tableRelationships, {
-        'personId': person.id,
-        'relatedToId': rel.personId,
-        'type': rel.type.name,
-      });
-      final inverseType = _getInverseRelationshipType(rel.type);
-      if (inverseType != null) {
-        await txn.insert(tableRelationships, {
-          'personId': rel.personId,
-          'relatedToId': person.id,
-          'type': inverseType.name,
-        });
-      }
-    }
-  });
-}
-
-  
-  // Se ha eliminado el CREATE TABLE duplicado. Ahora solo hay uno para cada tabla.
+  // --- Creación de Tablas (para una BD nueva) ---
   Future _onCreate(Database db, int version) async {
+    // Tabla de Personas
     await db.execute('''
           CREATE TABLE $tablePeople (
             id TEXT PRIMARY KEY,
@@ -78,10 +49,11 @@ Future<void> updatePerson(Person person) async {
             identityCard TEXT,
             country TEXT,
             city TEXT,
-            isAlive INTEGER NOT NULL DEFAULT 1 
+            isAlive INTEGER NOT NULL DEFAULT 1
           )
           ''');
     
+    // Tabla de Relaciones
     await db.execute('''
           CREATE TABLE $tableRelationships (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -92,21 +64,76 @@ Future<void> updatePerson(Person person) async {
             FOREIGN KEY (relatedToId) REFERENCES people (id) ON DELETE CASCADE
           )
           ''');
+          
+    // Tabla de Hechos Históricos
+    await db.execute('''
+      CREATE TABLE $tableHistoricalEvents (
+        id TEXT PRIMARY KEY,
+        eventType TEXT NOT NULL,
+        description TEXT NOT NULL,
+        date TEXT NOT NULL,
+        priority TEXT NOT NULL,
+        relatedPersonId TEXT
+      )
+    ''');
   }
 
+  // --- Migración de la BD (para actualizar una BD existente) ---
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    await db.execute('DROP TABLE IF EXISTS $tableRelationships');
-    await db.execute('DROP TABLE IF EXISTS $tablePeople');
-    await _onCreate(db, newVersion);
+    // Lógica de migración incremental. Se ejecutan solo los cambios necesarios.
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE $tableHistoricalEvents (
+          id TEXT PRIMARY KEY,
+          eventType TEXT NOT NULL,
+          description TEXT NOT NULL,
+          date TEXT NOT NULL,
+          priority TEXT NOT NULL,
+          relatedPersonId TEXT
+        )
+      ''');
+    }
+    // En el futuro, si tuvieras una versión 5, añadirías:
+    // if (oldVersion < 5) { /* Comandos para la versión 5 */ }
   }
 
-  // --- El resto de la clase no cambia ---
+  // --- Métodos para Personas y Relaciones ---
 
   Future<void> insertPerson(Person person) async {
     final db = await instance.database;
     await db.transaction((txn) async {
       await txn.insert(tablePeople, person.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
       
+      for (final rel in person.relationships) {
+        await txn.insert(tableRelationships, {
+          'personId': person.id,
+          'relatedToId': rel.personId,
+          'type': rel.type.name,
+        });
+        final inverseType = _getInverseRelationshipType(rel.type);
+        if (inverseType != null) {
+          await txn.insert(tableRelationships, {
+            'personId': rel.personId,
+            'relatedToId': person.id,
+            'type': inverseType.name,
+          });
+        }
+      }
+    });
+  }
+
+  Future<void> updatePerson(Person person) async {
+    final db = await instance.database;
+    await db.transaction((txn) async {
+      await txn.update(
+        tablePeople,
+        person.toMap(),
+        where: 'id = ?',
+        whereArgs: [person.id],
+      );
+
+      await txn.delete(tableRelationships, where: 'personId = ? OR relatedToId = ?', whereArgs: [person.id, person.id]);
+
       for (final rel in person.relationships) {
         await txn.insert(tableRelationships, {
           'personId': person.id,
@@ -198,5 +225,21 @@ Future<void> updatePerson(Person person) async {
     RelationshipType.hermana: RelationshipType.hermana,
   };
   return inverses[type];
+  }
+
+ // --- Métodos para Hechos Históricos ---
+
+  Future<void> insertHistoricalEvent(HistoricalEvent event) async {
+    final db = await instance.database;
+    await db.insert(tableHistoricalEvents, event.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<HistoricalEvent>> getHistoricalEvents() async {
+    final db = await instance.database;
+    final List<Map<String, dynamic>> maps = await db.query(tableHistoricalEvents);
+    return List.generate(maps.length, (i) {
+      return HistoricalEvent.fromMap(maps[i]);
+    });
   }
 }

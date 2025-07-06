@@ -31,3 +31,8 @@
 ## Init - 4. -  05/07/2025
 
 - Añadido Arbol (Se puede mejorar con otra logica)
+
+## Init - 5. -  05/07/2025
+
+- Añadido Documentos Familiares
+- Funcionalidad Hechos Historicos
