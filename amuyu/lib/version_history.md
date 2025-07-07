@@ -56,3 +56,7 @@
 ## Update - 8 -  06/07/2025
 
 - Añadido Documentos Importantes
+
+## Update - 8.1 -  06/07/2025
+
+- Añadido Footer
