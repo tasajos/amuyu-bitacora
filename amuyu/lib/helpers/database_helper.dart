@@ -6,15 +6,17 @@ import 'package:path_provider/path_provider.dart';
 import 'package:amuyu/models/person_model.dart';
 import 'package:amuyu/models/historical_event_model.dart';
 import 'package:amuyu/models/daily_activity_model.dart'; 
+import 'package:amuyu/models/family_document_model.dart'; 
 // Necesario para IconData
 
 class DatabaseHelper {
   static const _databaseName = "Amuyu.db";
-  static const _databaseVersion = 5;
-  static const tableDailyActivities = 'daily_activities'; // <-- Nuevo nombre de tabla
+  static const _databaseVersion = 6;
+  static const tableDailyActivities = 'daily_activities'; 
  static const tablePeople = 'people';
   static const tableRelationships = 'relationships';
   static const tableHistoricalEvents = 'historical_events';
+   static const tableFamilyDocuments = 'family_documents'; // <-- Nuevo nombre de tabla
   
 
 String getDatabaseName() {
@@ -89,7 +91,7 @@ Future<void> closeDatabase() async {
       )
     ''');
 
- // Añadir la creación de la nueva tabla
+ // Actividades Diarias
     await db.execute('''
       CREATE TABLE $tableDailyActivities (
         id TEXT PRIMARY KEY,
@@ -100,6 +102,17 @@ Future<void> closeDatabase() async {
       )
     ''');
 
+// Documentos Familiares
+    await db.execute('''
+      CREATE TABLE $tableFamilyDocuments (
+        id TEXT PRIMARY KEY,
+        documentType TEXT NOT NULL,
+        displayName TEXT NOT NULL,
+        filePath TEXT NOT NULL,
+        relatedPersonId TEXT,
+        createdAt TEXT NOT NULL
+      )
+    ''');
 
 
 
@@ -132,6 +145,21 @@ Future<void> closeDatabase() async {
       ''');
 
     }
+if (oldVersion < 6) {
+      await db.execute('''
+        CREATE TABLE $tableFamilyDocuments (
+          id TEXT PRIMARY KEY,
+          documentType TEXT NOT NULL,
+          displayName TEXT NOT NULL,
+          filePath TEXT NOT NULL,
+          relatedPersonId TEXT,
+          createdAt TEXT NOT NULL
+        )
+      ''');
+    }
+
+
+
     // En el futuro, si tuvieras una versión 5, añadirías:
     // if (oldVersion < 5) { /* Comandos para la versión 5 */ }
   }
@@ -310,6 +338,8 @@ Future<void> closeDatabase() async {
     return List.generate(maps.length, (i) => HistoricalEvent.fromMap(maps[i]));
   }
 
+
+
   // --- CORRECCIÓN AQUÍ: La función ahora está DENTRO de la clase ---
   Future<void> updateHistoricalEvent(HistoricalEvent event) async {
     final db = await instance.database;
@@ -321,5 +351,38 @@ Future<void> closeDatabase() async {
     );
   }
 
+
+  // --- Métodos para Documentos Familiares ---
+
+  Future<void> insertFamilyDocument(FamilyDocument doc) async {
+    final db = await instance.database;
+    await db.insert(tableFamilyDocuments, doc.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<FamilyDocument>> getFamilyDocuments(String documentType) async {
+    final db = await instance.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableFamilyDocuments,
+      where: 'documentType = ?',
+      whereArgs: [documentType],
+      orderBy: 'createdAt DESC',
+    );
+    return List.generate(maps.length, (i) {
+      return FamilyDocument.fromMap(maps[i]);
+    });
+  }
+
+  Future<void> deleteFamilyDocument(String id) async {
+    final db = await instance.database;
+    await db.delete(
+      tableFamilyDocuments,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+
   
 }
+
