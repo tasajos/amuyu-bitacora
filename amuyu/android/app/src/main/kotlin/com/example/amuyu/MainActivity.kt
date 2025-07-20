@@ -1,4 +1,4 @@
-package com.example.amuyu
+package com.chakuy.amuyu
 
 import io.flutter.embedding.android.FlutterActivity
 

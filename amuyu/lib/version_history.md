@@ -1,6 +1,8 @@
 # Version 0
 
-- Repo Inicial
+- Bitacora de Vida
+- Actividades Diarias
+- Hitos Historicos
 
 ## Init - 0
 
